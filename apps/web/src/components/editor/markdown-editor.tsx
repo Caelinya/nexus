@@ -1,10 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown } from '@codemirror/lang-markdown'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorView } from '@codemirror/view'
+import { debounce } from '@/lib/debounce'
 
 interface MarkdownEditorProps {
   value: string
@@ -15,7 +16,7 @@ interface MarkdownEditorProps {
 export function MarkdownEditor({
   value,
   onChange,
-  className,
+  className = '',
 }: MarkdownEditorProps) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
@@ -34,23 +35,33 @@ export function MarkdownEditor({
       })
     })
 
+    // Start observing
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class'],
     })
 
-    return () => observer.disconnect()
+    // Cleanup function to disconnect observer
+    return () => {
+      observer.disconnect()
+    }
   }, [])
 
-  const handleChange = useCallback(
-    (val: string) => {
-      onChange?.(val)
-    },
+  // Debounce onChange to reduce re-renders
+  const debouncedOnChange = useMemo(
+    () => (onChange ? debounce(onChange, 300) : undefined),
     [onChange]
   )
 
+  const handleChange = useCallback(
+    (val: string) => {
+      debouncedOnChange?.(val)
+    },
+    [debouncedOnChange]
+  )
+
   return (
-    <div className={className}>
+    <div className={`flex-1 overflow-auto ${className}`} spellCheck="false">
       <CodeMirror
         value={value}
         minHeight="400px"
@@ -61,6 +72,7 @@ export function MarkdownEditor({
         ]}
         theme={theme === 'dark' ? oneDark : undefined}
         onChange={handleChange}
+        spellCheck={false}
         basicSetup={{
           lineNumbers: true,
           highlightActiveLineGutter: true,

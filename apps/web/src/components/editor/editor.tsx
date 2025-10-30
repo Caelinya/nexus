@@ -1,8 +1,9 @@
 'use client'
 
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, Editor as TipTapEditor } from '@tiptap/react'
 import { extensions } from './extensions'
-import { Toolbar } from './toolbar'
+import { ToolbarResponsive } from './toolbar-responsive'
+import { StatusBar } from './status-bar'
 import { cn } from '@/lib/utils'
 import 'katex/dist/katex.min.css'
 import { useImperativeHandle, forwardRef, useEffect, useRef } from 'react'
@@ -19,7 +20,7 @@ interface EditorProps {
 
 export interface EditorRef {
   getMarkdown: () => string
-  getEditor: () => any
+  getEditor: () => TipTapEditor | null
 }
 
 export const Editor = forwardRef<EditorRef, EditorProps>(function Editor(
@@ -35,6 +36,14 @@ export const Editor = forwardRef<EditorRef, EditorProps>(function Editor(
   ref
 ) {
   const isUpdatingFromMarkdown = useRef(false)
+  const onChangeRef = useRef(onChange)
+  const onMarkdownChangeRef = useRef(onMarkdownChange)
+  
+  // Keep refs updated
+  useEffect(() => {
+    onChangeRef.current = onChange
+    onMarkdownChangeRef.current = onMarkdownChange
+  })
   
   const editor = useEditor({
     extensions,
@@ -48,12 +57,12 @@ export const Editor = forwardRef<EditorRef, EditorProps>(function Editor(
       }
       
       const html = editor.getHTML()
-      onChange?.(html)
+      onChangeRef.current?.(html)
       
       // Also emit markdown
-      if (onMarkdownChange) {
+      if (onMarkdownChangeRef.current) {
         const md = editor.storage.markdown.getMarkdown()
-        onMarkdownChange(md)
+        onMarkdownChangeRef.current(md)
       }
     },
     editorProps: {
@@ -62,6 +71,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(function Editor(
           'focus:outline-none min-h-[400px] px-4 py-3',
           className
         ),
+        spellcheck: 'false',
       },
     },
   })
@@ -74,18 +84,23 @@ export const Editor = forwardRef<EditorRef, EditorProps>(function Editor(
     if (currentMarkdown === markdownValue) return
     
     isUpdatingFromMarkdown.current = true
-    editor.commands.setContent(markdownValue)
-    isUpdatingFromMarkdown.current = false
     
-    // Immediately trigger onChange to update character count and other states
-    const html = editor.getHTML()
-    onChange?.(html)
-    
-    if (onMarkdownChange) {
-      const md = editor.storage.markdown.getMarkdown()
-      onMarkdownChange(md)
-    }
-  }, [markdownValue, editor, onChange, onMarkdownChange])
+    queueMicrotask(() => {
+      editor.commands.setContent(markdownValue, false, {
+        preserveWhitespace: 'full'
+      })
+      
+      isUpdatingFromMarkdown.current = false
+      
+      const html = editor.getHTML()
+      onChangeRef.current?.(html)
+      
+      if (onMarkdownChangeRef.current) {
+        const md = editor.storage.markdown.getMarkdown()
+        onMarkdownChangeRef.current(md)
+      }
+    })
+  }, [markdownValue, editor])
 
   useImperativeHandle(ref, () => ({
     getMarkdown: () => {
@@ -100,9 +115,12 @@ export const Editor = forwardRef<EditorRef, EditorProps>(function Editor(
   }
 
   return (
-    <div className="border rounded-lg overflow-visible bg-background">
-      {editable && <Toolbar editor={editor} onToggleMarkdown={onToggleMarkdown} />}
-      <EditorContent editor={editor} />
+    <div className="border rounded-lg overflow-hidden bg-background flex flex-col">
+      {editable && <ToolbarResponsive editor={editor} onToggleMarkdown={onToggleMarkdown} />}
+      <div className="flex-1 overflow-auto">
+        <EditorContent editor={editor} />
+      </div>
+      {editable && <StatusBar editor={editor} />}
     </div>
   )
 })

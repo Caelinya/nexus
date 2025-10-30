@@ -248,15 +248,27 @@
   color: oklch(0.985 0 0);
 }
 
-/* 代码块样式 */
-.ProseMirror pre {
-  border-radius: 0.5rem;
-  padding: 1rem;
+/* 代码块样式 - 使用 NodeView，不再需要 ::before 伪元素 */
+.ProseMirror .code-block-wrapper {
   margin: 1rem 0;
-  overflow-x: auto;
 }
 
-.ProseMirror pre code {
+.ProseMirror .code-block-wrapper pre {
+  position: relative;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 0;
+  overflow-x: auto;
+  border: 1px solid oklch(0.922 0 0);
+  background-color: oklch(0.985 0 0);
+}
+
+.dark .ProseMirror .code-block-wrapper pre {
+  border-color: oklch(0.269 0 0);
+  background-color: oklch(0.145 0 0);
+}
+
+.ProseMirror .code-block-wrapper pre code {
   background: transparent !important;
   padding: 0;
   font-size: 0.9375rem;
@@ -267,14 +279,10 @@
 }
 
 /* highlight.js 样式支持 */
-.ProseMirror .hljs {
+.ProseMirror .code-block-wrapper .hljs {
   display: block;
   padding: 0;
   background: transparent;
-}
-
-.ProseMirror pre.hljs {
-  padding: 1rem;
 }
 
 /* 水平线 */

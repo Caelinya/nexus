@@ -9,25 +9,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Palette } from 'lucide-react'
-
-const CODE_THEMES = [
-  { name: 'GitHub', value: 'github', category: 'light' },
-  { name: 'GitHub Dark', value: 'github-dark', category: 'dark' },
-  { name: 'VS Code', value: 'vs', category: 'light' },
-  { name: 'VS Code Dark', value: 'vs2015', category: 'dark' },
-  { name: 'Atom One Light', value: 'atom-one-light', category: 'light' },
-  { name: 'Atom One Dark', value: 'atom-one-dark', category: 'dark' },
-  { name: 'Monokai', value: 'monokai', category: 'dark' },
-  { name: 'Dracula', value: 'base16/dracula', category: 'dark' },
-  { name: 'Tokyo Night', value: 'tokyo-night-dark', category: 'dark' },
-  { name: 'Nord', value: 'nord', category: 'dark' },
-  { name: 'Gruvbox Dark', value: 'base16/gruvbox-dark-hard', category: 'dark' },
-  { name: 'Solarized Light', value: 'base16/solarized-light', category: 'light' },
-  { name: 'Solarized Dark', value: 'base16/solarized-dark', category: 'dark' },
-]
+import { CODE_THEMES, DEFAULT_CODE_THEME } from '@/constants/themes'
 
 export function CodeThemeSelector() {
-  const [currentTheme, setCurrentTheme] = useState('github-dark')
+  const [currentTheme, setCurrentTheme] = useState(DEFAULT_CODE_THEME)
 
   useEffect(() => {
     // Load saved theme from localStorage
@@ -36,7 +21,7 @@ export function CodeThemeSelector() {
       setCurrentTheme(savedTheme)
       loadTheme(savedTheme)
     } else {
-      loadTheme('github-dark')
+      loadTheme(DEFAULT_CODE_THEME)
     }
   }, [])
 
@@ -62,7 +47,8 @@ export function CodeThemeSelector() {
   }
 
   const getCurrentThemeName = () => {
-    return CODE_THEMES.find((t) => t.value === currentTheme)?.name || 'GitHub Dark'
+    const theme = CODE_THEMES.find((t) => t.value === currentTheme)
+    return theme?.name || CODE_THEMES.find((t) => t.value === DEFAULT_CODE_THEME)?.name || 'GitHub Dark'
   }
 
   return (

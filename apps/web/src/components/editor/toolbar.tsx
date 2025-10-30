@@ -41,8 +41,9 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { CodeThemeSelector } from './code-theme-selector'
+import { getWordCount, getReadingTime } from '@/lib/text-stats'
 
 interface ToolbarProps {
   editor: Editor
@@ -54,6 +55,7 @@ interface ToolButtonProps {
   onClick: () => void
   isActive?: boolean
   tooltip: string
+  shortcut?: string
 }
 
 function ToolButton({
@@ -61,6 +63,7 @@ function ToolButton({
   onClick,
   isActive = false,
   tooltip,
+  shortcut,
 }: ToolButtonProps) {
   return (
     <TooltipProvider>
@@ -76,7 +79,14 @@ function ToolButton({
           </Toggle>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{tooltip}</p>
+          <div className="flex items-center gap-2">
+            <p>{tooltip}</p>
+            {shortcut && (
+              <kbd className="px-1.5 py-0.5 text-xs bg-secondary text-secondary-foreground rounded border border-border">
+                {shortcut}
+              </kbd>
+            )}
+          </div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -88,6 +98,15 @@ export function Toolbar({ editor, onToggleMarkdown }: ToolbarProps) {
   const [linkUrl, setLinkUrl] = useState('')
   const [mathDialogOpen, setMathDialogOpen] = useState(false)
   const [mathFormula, setMathFormula] = useState('')
+
+  // Calculate text statistics
+  const textStats = useMemo(() => {
+    const text = editor.getText()
+    const characterCount = editor.storage.characterCount.characters()
+    const wordCount = getWordCount(text)
+    const readingTime = getReadingTime(wordCount)
+    return { characterCount, wordCount, readingTime }
+  }, [editor.getText(), editor.storage.characterCount.characters()])
 
   const addLink = () => {
     if (linkUrl) {
@@ -112,7 +131,7 @@ export function Toolbar({ editor, onToggleMarkdown }: ToolbarProps) {
 
   return (
     <>
-      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 border-b p-2 bg-muted/30 backdrop-blur-sm">
+      <div className="sticky top-0 z-10 flex items-center gap-1 border-b p-2 bg-muted/30 backdrop-blur-sm overflow-x-auto scrollbar-thin">
         <Button
           variant="ghost"
           size="sm"
@@ -136,19 +155,22 @@ export function Toolbar({ editor, onToggleMarkdown }: ToolbarProps) {
           icon={Bold}
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive('bold')}
-          tooltip="Bold (Ctrl+B)"
+          tooltip="Bold"
+          shortcut="Ctrl+B"
         />
         <ToolButton
           icon={Italic}
           onClick={() => editor.chain().focus().toggleItalic().run()}
           isActive={editor.isActive('italic')}
-          tooltip="Italic (Ctrl+I)"
+          tooltip="Italic"
+          shortcut="Ctrl+I"
         />
         <ToolButton
           icon={UnderlineIcon}
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           isActive={editor.isActive('underline')}
-          tooltip="Underline (Ctrl+U)"
+          tooltip="Underline"
+          shortcut="Ctrl+U"
         />
         <ToolButton
           icon={Strikethrough}
@@ -326,8 +348,12 @@ export function Toolbar({ editor, onToggleMarkdown }: ToolbarProps) {
           )}
           <CodeThemeSelector />
           <Separator orientation="vertical" className="h-6" />
-          <div className="text-xs text-muted-foreground">
-            {editor.storage.characterCount.characters()} characters
+          <div className="text-xs text-muted-foreground flex items-center gap-3">
+            <span>{textStats.characterCount} chars</span>
+            <span>·</span>
+            <span>{textStats.wordCount} words</span>
+            <span>·</span>
+            <span>{textStats.readingTime} min read</span>
           </div>
         </div>
       </div>

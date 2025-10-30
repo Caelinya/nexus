@@ -1,62 +1,76 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Editor, EditorRef } from '@/components/editor'
-import { MarkdownEditor } from '@/components/editor/markdown-editor'
-import { Button } from '@/components/ui/button'
+import { useRef, useEffect } from 'react'
+import { EditorRef } from '@/components/editor'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { Save, FileText, FileCode, Columns, Layers } from 'lucide-react'
-import { ThemeToggle } from '@/components/theme-toggle'
-import { MarkdownToolbar } from '@/components/editor/markdown-toolbar'
+import { useEditorState } from '@/hooks/useEditorState'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { ArticleEditorHeader } from './components/ArticleEditorHeader'
+import { EditorContainer } from './components/EditorContainer'
+import { AdvancedOptions } from './components/AdvancedOptions'
 
 export default function EditArticlePage() {
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [markdown, setMarkdown] = useState('')
-  const [layoutMode, setLayoutMode] = useState<'tabs' | 'split'>('tabs')
-  const [showMarkdown, setShowMarkdown] = useState(false)
   const editorRef = useRef<EditorRef>(null)
+  const isMobile = useMediaQuery('(max-width: 768px)')
+  const {
+    title,
+    content,
+    markdown,
+    layoutMode,
+    showMarkdown,
+    setTitle,
+    setContent,
+    setMarkdown,
+    toggleLayoutMode,
+    setShowMarkdown,
+  } = useEditorState()
 
   const handleSave = () => {
     console.log('Saving article:', { title, content, markdown })
     // TODO: Call API to save article
   }
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
+      const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey
+
+      // Ctrl/Cmd + S: Save
+      if (ctrlOrCmd && e.key === 's') {
+        e.preventDefault()
+        handleSave()
+        return
+      }
+
+      // Ctrl/Cmd + /: Toggle markdown view (only in tab mode)
+      if (ctrlOrCmd && e.key === '/' && layoutMode === 'tabs') {
+        e.preventDefault()
+        setShowMarkdown(!showMarkdown)
+        return
+      }
+
+      // Ctrl/Cmd + \: Toggle layout mode
+      if (ctrlOrCmd && e.key === '\\') {
+        e.preventDefault()
+        toggleLayoutMode()
+        return
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleSave, layoutMode, showMarkdown, setShowMarkdown, toggleLayoutMode])
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <FileText className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">Article Editor</h1>
-          <Badge variant="outline">Beta</Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <Button
-            variant="outline"
-            onClick={() => setLayoutMode(layoutMode === 'tabs' ? 'split' : 'tabs')}
-          >
-            {layoutMode === 'tabs' ? (
-              <>
-                <Columns className="h-4 w-4 mr-2" />
-                Split View
-              </>
-            ) : (
-              <>
-                <Layers className="h-4 w-4 mr-2" />
-                Tab View
-              </>
-            )}
-          </Button>
-          <Button onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
-            Save Article
-          </Button>
-        </div>
-      </div>
+      <ArticleEditorHeader
+        layoutMode={layoutMode}
+        isMobile={isMobile}
+        onToggleLayout={toggleLayoutMode}
+        onSave={handleSave}
+      />
 
       <div className="space-y-6">
         <div className="space-y-2">
@@ -67,85 +81,23 @@ export default function EditArticlePage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="text-xl font-semibold"
+            spellCheck={false}
           />
         </div>
 
-        {layoutMode === 'tabs' ? (
-          <div className="w-full">
-            {!showMarkdown ? (
-              <Editor 
-                ref={editorRef} 
-                content={content} 
-                onChange={setContent}
-                onMarkdownChange={setMarkdown}
-                markdownValue={markdown}
-                onToggleMarkdown={() => setShowMarkdown(true)}
-              />
-            ) : (
-              <div className="border rounded-lg overflow-visible bg-background">
-                <MarkdownToolbar onToggle={() => setShowMarkdown(false)} />
-                <MarkdownEditor 
-                  value={markdown}
-                  onChange={setMarkdown}
-                />
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 px-1">
-                <FileText className="h-4 w-4" />
-                <h3 className="text-sm font-medium">Rich Text Editor</h3>
-              </div>
-              <Editor 
-                ref={editorRef} 
-                content={content} 
-                onChange={setContent}
-                onMarkdownChange={setMarkdown}
-                markdownValue={markdown}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 px-1">
-                <FileCode className="h-4 w-4" />
-                <h3 className="text-sm font-medium">Markdown Source</h3>
-              </div>
-              <MarkdownEditor 
-                value={markdown}
-                onChange={setMarkdown}
-                className="border rounded-lg overflow-hidden"
-              />
-            </div>
-          </div>
-        )}
+        <EditorContainer
+          editorRef={editorRef}
+          content={content}
+          markdown={markdown}
+          layoutMode={layoutMode}
+          showMarkdown={showMarkdown}
+          isMobile={isMobile}
+          onContentChange={setContent}
+          onMarkdownChange={setMarkdown}
+          onToggleMarkdown={setShowMarkdown}
+        />
 
-        <div className="border-t pt-4">
-          <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-            Advanced Options
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="border rounded-lg p-4">
-              <h4 className="font-medium mb-1">Access Control</h4>
-              <p className="text-sm text-muted-foreground">
-                Set password protection, IP restrictions, etc.
-              </p>
-            </div>
-            <div className="border rounded-lg p-4">
-              <h4 className="font-medium mb-1">Self-Destruct</h4>
-              <p className="text-sm text-muted-foreground">
-                Automatically destroy after reading
-              </p>
-            </div>
-            <div className="border rounded-lg p-4">
-              <h4 className="font-medium mb-1">Attachments</h4>
-              <p className="text-sm text-muted-foreground">
-                Upload and manage article attachments
-              </p>
-            </div>
-          </div>
-        </div>
+        <AdvancedOptions />
       </div>
     </div>
   )
