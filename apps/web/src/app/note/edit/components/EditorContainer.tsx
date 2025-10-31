@@ -56,9 +56,11 @@ export function EditorContainer({
           />
         ) : (
           <Suspense fallback={<LoadingFallback text="Loading markdown editor..." />}>
-            <div className="border rounded-lg overflow-hidden bg-background flex flex-col">
+            <div className="border rounded-lg bg-background flex flex-col relative">
               <MarkdownToolbar onToggle={() => onToggleMarkdown(false)} />
-              <MarkdownEditor value={markdown} onChange={onMarkdownChange} />
+              <div className="flex-1 overflow-hidden">
+                <MarkdownEditor value={markdown} onChange={onMarkdownChange} />
+              </div>
               <MarkdownStatusBar value={markdown} />
             </div>
           </Suspense>
@@ -90,11 +92,13 @@ export function EditorContainer({
           <h3 className="text-sm font-medium">Markdown Source</h3>
         </div>
         <Suspense fallback={<LoadingFallback />}>
-          <div className="border rounded-lg overflow-hidden bg-background flex flex-col">
-            <MarkdownEditor
-              value={markdown}
-              onChange={onMarkdownChange}
-            />
+          <div className="border rounded-lg bg-background flex flex-col relative h-full">
+            <div className="flex-1 overflow-hidden">
+              <MarkdownEditor
+                value={markdown}
+                onChange={onMarkdownChange}
+              />
+            </div>
             <MarkdownStatusBar value={markdown} />
           </div>
         </Suspense>

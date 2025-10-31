@@ -170,7 +170,7 @@ export function ToolbarResponsive({ editor, onToggleMarkdown }: ToolbarProps) {
 
   return (
     <>
-      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 border-b p-2 bg-muted/30 backdrop-blur-sm">
+      <div className="sticky top-2 z-10 mx-2 mb-2 flex flex-wrap items-center gap-1 rounded-lg p-2 bg-background/70 dark:bg-zinc-900/70 backdrop-blur-md shadow-sm border border-border/50">
         {/* Undo/Redo */}
         <div className="flex items-center gap-1">
           <TooltipProvider>

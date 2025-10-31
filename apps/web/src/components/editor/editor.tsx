@@ -128,9 +128,9 @@ export const Editor = forwardRef<EditorRef, EditorProps>(function Editor(
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden bg-background flex flex-col">
+    <div className="border rounded-lg bg-background flex flex-col relative">
       {editable && <ToolbarResponsive editor={editor} onToggleMarkdown={onToggleMarkdown} />}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <EditorContent editor={editor} />
       </div>
       {editable && <StatusBar editor={editor} />}

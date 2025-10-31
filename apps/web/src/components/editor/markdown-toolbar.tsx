@@ -15,7 +15,7 @@ interface MarkdownToolbarProps {
 
 export function MarkdownToolbar({ onToggle }: MarkdownToolbarProps) {
   return (
-    <div className="sticky top-0 z-10 flex items-center gap-2 border-b p-2 bg-muted/30 backdrop-blur-sm">
+    <div className="sticky top-2 z-10 mx-2 mb-2 flex items-center gap-2 rounded-lg p-2 bg-background/70 dark:bg-zinc-900/70 backdrop-blur-md shadow-sm border border-border/50">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

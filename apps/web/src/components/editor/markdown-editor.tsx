@@ -63,7 +63,8 @@ export function MarkdownEditor({
     <div className={`flex-1 overflow-auto ${className}`} spellCheck="false">
       <CodeMirror
         value={value}
-        height="400px"
+        minHeight="400px"
+        maxHeight="none"
         extensions={[markdown()]}
         theme={theme === 'dark' ? oneDark : undefined}
         onChange={handleChange}
