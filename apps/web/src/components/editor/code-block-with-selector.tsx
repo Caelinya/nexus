@@ -2,7 +2,7 @@
 
 import { NodeViewContent, NodeViewWrapper, NodeViewProps } from '@tiptap/react'
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const LANGUAGES = [
@@ -43,6 +43,9 @@ const LANGUAGE_ALIASES: Record<string, string> = {
   'md': 'markdown',
 }
 
+// Threshold for auto-collapse (number of lines)
+const AUTO_COLLAPSE_THRESHOLD = 20
+
 export function CodeBlockWithSelector({ node, updateAttributes, editor }: NodeViewProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -53,6 +56,13 @@ export function CodeBlockWithSelector({ node, updateAttributes, editor }: NodeVi
   const normalizedLang = (rawLanguage || 'plaintext').toLowerCase()
   const language = LANGUAGE_ALIASES[normalizedLang] || normalizedLang
   const selectedLang = LANGUAGES.find(l => l.value === language) || LANGUAGES[0]
+  
+  // Calculate initial collapsed state based on line count
+  const codeContent = node.textContent || ''
+  const lineCount = codeContent.split('\n').length
+  const shouldAutoCollapse = lineCount > AUTO_COLLAPSE_THRESHOLD
+  
+  const [collapsed, setCollapsed] = useState(shouldAutoCollapse)
 
   const calculateDropdownPosition = () => {
     if (!buttonRef.current) return
@@ -140,9 +150,10 @@ export function CodeBlockWithSelector({ node, updateAttributes, editor }: NodeVi
   return (
     <>
       <NodeViewWrapper className="relative code-block-wrapper" style={{ overflow: 'visible' }}>
-        <pre className={cn('code-block', `language-${language}`)} data-language={language} style={{ position: 'relative' }}>
+        <pre className={cn('code-block', `language-${language}`, 'relative')} data-language={language}>
+          {/* Language selector */}
           {editor.isEditable ? (
-            <div className="absolute top-0 left-0 right-0 z-10">
+            <div className="absolute top-0 left-0 z-10">
               <button
                 ref={buttonRef}
                 type="button"
@@ -158,16 +169,42 @@ export function CodeBlockWithSelector({ node, updateAttributes, editor }: NodeVi
               </button>
             </div>
           ) : (
-            <div className="absolute top-0 left-0 px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground bg-muted/50 rounded-tl-lg border-b border-border">
+            <div className="absolute top-0 left-0 px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground bg-muted/50 rounded-tl-lg rounded-tr-lg border-b border-border">
               {selectedLang.label}
             </div>
           )}
-          <code
-            className={cn(`language-${language}`, 'pt-10')}
-            style={{ display: 'block' }}
-          >
-            <NodeViewContent />
-          </code>
+          
+          {/* Collapse button - show always if content is long enough */}
+          {(editor.isEditable || shouldAutoCollapse) && (
+            <button
+              type="button"
+              onClick={() => setCollapsed(!collapsed)}
+              className="absolute top-0 right-0 z-10 flex items-center gap-1 px-2 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted rounded-tr-lg rounded-tl-lg border-b border-border transition-colors"
+              contentEditable={false}
+              title={collapsed ? 'Expand' : 'Collapse'}
+            >
+              {collapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+            </button>
+          )}
+          
+          {/* Code content */}
+          <div className={cn('relative', collapsed && 'max-h-[288px] overflow-hidden')}>
+            <code
+              className={cn(`language-${language}`, 'pt-10 block')}
+            >
+              <NodeViewContent />
+            </code>
+            {/* Gradient fade effect when collapsed - more subtle */}
+            {collapsed && (
+              <>
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-zinc-950/90 via-zinc-950/50 to-transparent dark:from-zinc-900/90 dark:via-zinc-900/50 pointer-events-none" />
+                <div className="absolute bottom-2 left-4 right-4 text-xs text-muted-foreground flex items-center gap-2">
+                  <span>···</span>
+                  <span className="italic">Click ▼ to expand</span>
+                </div>
+              </>
+            )}
+          </div>
         </pre>
       </NodeViewWrapper>
 
