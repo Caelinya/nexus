@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { type Editor } from '@tiptap/react'
 import { Separator } from '@/components/ui/separator'
 import { CodeThemeSelector } from './code-theme-selector'
@@ -9,13 +9,31 @@ interface StatusBarProps {
 }
 
 export function StatusBar({ editor }: StatusBarProps) {
-  // Calculate text statistics
-  const textStats = useMemo(() => {
-    const text = editor.getText()
-    const characterCount = editor.storage.characterCount?.characters() || 0
-    const wordCount = getWordCount(text)
-    const readingTime = getReadingTime(wordCount)
-    return { characterCount, wordCount, readingTime }
+  const [textStats, setTextStats] = useState({
+    characterCount: 0,
+    wordCount: 0,
+    readingTime: 0,
+  })
+
+  useEffect(() => {
+    const updateStats = () => {
+      const text = editor.getText()
+      const characterCount = editor.storage.characterCount?.characters() || text.length
+      const wordCount = editor.storage.characterCount?.words() || getWordCount(text)
+      const readingTime = getReadingTime(wordCount)
+      setTextStats({ characterCount, wordCount, readingTime })
+    }
+
+    // Initial update
+    updateStats()
+
+    // Listen to editor updates
+    editor.on('update', updateStats)
+
+    // Cleanup
+    return () => {
+      editor.off('update', updateStats)
+    }
   }, [editor])
 
   return (
