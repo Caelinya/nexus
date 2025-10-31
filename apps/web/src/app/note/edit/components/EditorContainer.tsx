@@ -1,14 +1,14 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { Editor, EditorRef } from '@/components/editor'
 import { FileText, FileCode } from 'lucide-react'
 
-const MarkdownEditor = lazy(() => 
+const MarkdownEditor = lazy(() =>
   import('@/components/editor/markdown-editor').then(m => ({ default: m.MarkdownEditor }))
 )
-const MarkdownToolbar = lazy(() => 
+const MarkdownToolbar = lazy(() =>
   import('@/components/editor/markdown-toolbar').then(m => ({ default: m.MarkdownToolbar }))
 )
-const MarkdownStatusBar = lazy(() => 
+const MarkdownStatusBar = lazy(() =>
   import('@/components/editor/markdown-status-bar').then(m => ({ default: m.MarkdownStatusBar }))
 )
 
@@ -35,6 +35,15 @@ export function EditorContainer({
   onMarkdownChange,
   onToggleMarkdown,
 }: EditorContainerProps) {
+  const [markdownEditorTheme, setMarkdownEditorTheme] = useState('auto')
+
+  useEffect(() => {
+    // Load saved theme from localStorage
+    const savedTheme = localStorage.getItem('markdown-editor-theme')
+    if (savedTheme) {
+      setMarkdownEditorTheme(savedTheme)
+    }
+  }, [])
   const LoadingFallback = ({ text = 'Loading...' }: { text?: string }) => (
     <div className="border rounded-lg p-8 text-center text-muted-foreground">
       {text}
@@ -59,9 +68,18 @@ export function EditorContainer({
             <div className="border rounded-lg bg-background flex flex-col relative">
               <MarkdownToolbar onToggle={() => onToggleMarkdown(false)} />
               <div className="flex-1 overflow-hidden">
-                <MarkdownEditor value={markdown} onChange={onMarkdownChange} />
+                <MarkdownEditor
+                  value={markdown}
+                  onChange={onMarkdownChange}
+                  editorTheme={markdownEditorTheme}
+                  onThemeChange={setMarkdownEditorTheme}
+                />
               </div>
-              <MarkdownStatusBar value={markdown} />
+              <MarkdownStatusBar
+                value={markdown}
+                currentTheme={markdownEditorTheme}
+                onThemeChange={setMarkdownEditorTheme}
+              />
             </div>
           </Suspense>
         )}
@@ -97,9 +115,15 @@ export function EditorContainer({
               <MarkdownEditor
                 value={markdown}
                 onChange={onMarkdownChange}
+                editorTheme={markdownEditorTheme}
+                onThemeChange={setMarkdownEditorTheme}
               />
             </div>
-            <MarkdownStatusBar value={markdown} />
+            <MarkdownStatusBar
+              value={markdown}
+              currentTheme={markdownEditorTheme}
+              onThemeChange={setMarkdownEditorTheme}
+            />
           </div>
         </Suspense>
       </div>

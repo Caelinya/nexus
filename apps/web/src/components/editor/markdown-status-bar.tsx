@@ -1,13 +1,19 @@
 import { useMemo } from 'react'
 import { Separator } from '@/components/ui/separator'
-import { CodeThemeSelector } from './code-theme-selector'
+import { MarkdownThemeSelector } from './markdown-theme-selector'
 import { getWordCount, getReadingTime } from '@/lib/text-stats'
 
 interface MarkdownStatusBarProps {
   value: string
+  currentTheme?: string
+  onThemeChange?: (theme: string) => void
 }
 
-export function MarkdownStatusBar({ value }: MarkdownStatusBarProps) {
+export function MarkdownStatusBar({
+  value,
+  currentTheme = 'light',
+  onThemeChange = () => {}
+}: MarkdownStatusBarProps) {
   // Calculate text statistics
   const textStats = useMemo(() => {
     const characterCount = value.length
@@ -31,7 +37,10 @@ export function MarkdownStatusBar({ value }: MarkdownStatusBarProps) {
 
       <div className="flex items-center gap-2">
         <Separator orientation="vertical" className="h-4" />
-        <CodeThemeSelector />
+        <MarkdownThemeSelector
+          currentTheme={currentTheme}
+          onThemeChange={onThemeChange}
+        />
       </div>
     </div>
   )
