@@ -13,7 +13,7 @@ const MarkdownStatusBar = lazy(() =>
 )
 
 interface EditorContainerProps {
-  editorRef: React.RefObject<EditorRef>
+  editorRef: React.RefObject<EditorRef | null>
   content: string
   markdown: string
   layoutMode: 'tabs' | 'split'

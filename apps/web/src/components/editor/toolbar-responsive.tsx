@@ -23,6 +23,8 @@ import {
   Minus,
   ChevronDown,
   FileCode,
+  Image as ImageIcon,
+  type LucideIcon,
 } from 'lucide-react'
 import { Toggle } from '@/components/ui/toggle'
 import { Separator } from '@/components/ui/separator'
@@ -58,6 +60,49 @@ interface ToolbarProps {
   onToggleMarkdown?: () => void
 }
 
+interface ToolButtonProps {
+  icon: LucideIcon
+  onClick: () => void
+  isActive?: boolean
+  tooltip: string
+  shortcut?: string
+}
+
+function ToolButton({
+  icon: Icon,
+  onClick,
+  isActive = false,
+  tooltip,
+  shortcut,
+}: ToolButtonProps) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Toggle
+            size="sm"
+            pressed={isActive}
+            onPressedChange={onClick}
+            aria-label={tooltip}
+          >
+            <Icon className="h-4 w-4" />
+          </Toggle>
+        </TooltipTrigger>
+        <TooltipContent>
+          <div className="flex items-center gap-2">
+            <p>{tooltip}</p>
+            {shortcut && (
+              <kbd className="px-1.5 py-0.5 text-xs bg-zinc-700 dark:bg-zinc-300 text-white dark:text-zinc-900 rounded font-mono">
+                {shortcut}
+              </kbd>
+            )}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
+
 const COMMON_LANGUAGES = [
   { label: 'Plain Text', value: 'plaintext' },
   { label: 'JavaScript', value: 'javascript' },
@@ -89,6 +134,9 @@ export function ToolbarResponsive({ editor, onToggleMarkdown }: ToolbarProps) {
   const [mathDialogOpen, setMathDialogOpen] = useState(false)
   const [mathFormula, setMathFormula] = useState('')
   const [codeLanguageOpen, setCodeLanguageOpen] = useState(false)
+  const [imageDialogOpen, setImageDialogOpen] = useState(false)
+  const [imageUrl, setImageUrl] = useState('')
+  const [imageAlt, setImageAlt] = useState('')
 
   const addLink = () => {
     if (linkUrl) {
@@ -111,68 +159,103 @@ export function ToolbarResponsive({ editor, onToggleMarkdown }: ToolbarProps) {
     setMathDialogOpen(false)
   }
 
+  const addImage = () => {
+    if (imageUrl) {
+      editor.chain().focus().setImage({ src: imageUrl, alt: imageAlt }).run()
+    }
+    setImageUrl('')
+    setImageAlt('')
+    setImageDialogOpen(false)
+  }
+
   return (
     <>
       <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 border-b p-2 bg-muted/30 backdrop-blur-sm">
         {/* Undo/Redo */}
         <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().undo().run()}
-            disabled={!editor.can().undo()}
-          >
-            <Undo className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().redo().run()}
-            disabled={!editor.can().redo()}
-          >
-            <Redo className="h-4 w-4" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => editor.chain().focus().undo().run()}
+                  disabled={!editor.can().undo()}
+                >
+                  <Undo className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="flex items-center gap-2">
+                  <p>Undo</p>
+                  <kbd className="px-1.5 py-0.5 text-xs bg-zinc-700 dark:bg-zinc-300 text-white dark:text-zinc-900 rounded font-mono">
+                    Ctrl+Z
+                  </kbd>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => editor.chain().focus().redo().run()}
+                  disabled={!editor.can().redo()}
+                >
+                  <Redo className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="flex items-center gap-2">
+                  <p>Redo</p>
+                  <kbd className="px-1.5 py-0.5 text-xs bg-zinc-700 dark:bg-zinc-300 text-white dark:text-zinc-900 rounded font-mono">
+                    Ctrl+Y
+                  </kbd>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         <Separator orientation="vertical" className="h-6 mx-1" />
 
         {/* Text Formatting Group - Desktop: Individual buttons, Mobile: Dropdown */}
         <div className="hidden md:flex items-center gap-1">
-          <Toggle
-            size="sm"
-            pressed={editor.isActive('bold')}
-            onPressedChange={() => editor.chain().focus().toggleBold().run()}
-          >
-            <Bold className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            size="sm"
-            pressed={editor.isActive('italic')}
-            onPressedChange={() => editor.chain().focus().toggleItalic().run()}
-          >
-            <Italic className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            size="sm"
-            pressed={editor.isActive('underline')}
-            onPressedChange={() => editor.chain().focus().toggleUnderline().run()}
-          >
-            <UnderlineIcon className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            size="sm"
-            pressed={editor.isActive('strike')}
-            onPressedChange={() => editor.chain().focus().toggleStrike().run()}
-          >
-            <Strikethrough className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            size="sm"
-            pressed={editor.isActive('code')}
-            onPressedChange={() => editor.chain().focus().toggleCode().run()}
-          >
-            <Code className="h-4 w-4" />
-          </Toggle>
+          <ToolButton
+            icon={Bold}
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            isActive={editor.isActive('bold')}
+            tooltip="Bold"
+            shortcut="Ctrl+B"
+          />
+          <ToolButton
+            icon={Italic}
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            isActive={editor.isActive('italic')}
+            tooltip="Italic"
+            shortcut="Ctrl+I"
+          />
+          <ToolButton
+            icon={UnderlineIcon}
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            isActive={editor.isActive('underline')}
+            tooltip="Underline"
+            shortcut="Ctrl+U"
+          />
+          <ToolButton
+            icon={Strikethrough}
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            isActive={editor.isActive('strike')}
+            tooltip="Strikethrough"
+          />
+          <ToolButton
+            icon={Code}
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            isActive={editor.isActive('code')}
+            tooltip="Inline Code"
+          />
         </div>
 
         {/* Mobile: Text Formatting Dropdown */}
@@ -229,27 +312,24 @@ export function ToolbarResponsive({ editor, onToggleMarkdown }: ToolbarProps) {
 
         {/* Headings - Individual buttons on large screens, dropdown on smaller screens */}
         <div className="hidden lg:flex items-center gap-1">
-          <Toggle
-            size="sm"
-            pressed={editor.isActive('heading', { level: 1 })}
-            onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          >
-            <Heading1 className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            size="sm"
-            pressed={editor.isActive('heading', { level: 2 })}
-            onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          >
-            <Heading2 className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            size="sm"
-            pressed={editor.isActive('heading', { level: 3 })}
-            onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          >
-            <Heading3 className="h-4 w-4" />
-          </Toggle>
+          <ToolButton
+            icon={Heading1}
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            isActive={editor.isActive('heading', { level: 1 })}
+            tooltip="Heading 1"
+          />
+          <ToolButton
+            icon={Heading2}
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            isActive={editor.isActive('heading', { level: 2 })}
+            tooltip="Heading 2"
+          />
+          <ToolButton
+            icon={Heading3}
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            isActive={editor.isActive('heading', { level: 3 })}
+            tooltip="Heading 3"
+          />
         </div>
 
         {/* Mobile/Tablet: Headings Dropdown */}
@@ -314,77 +394,84 @@ export function ToolbarResponsive({ editor, onToggleMarkdown }: ToolbarProps) {
 
         {/* Lists & Blocks - Individual buttons on large screens */}
         <div className="hidden xl:flex items-center gap-1">
-          <Toggle
-            size="sm"
-            pressed={editor.isActive('bulletList')}
-            onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
-          >
-            <List className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            size="sm"
-            pressed={editor.isActive('orderedList')}
-            onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
-          >
-            <ListOrdered className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            size="sm"
-            pressed={editor.isActive('taskList')}
-            onPressedChange={() => editor.chain().focus().toggleTaskList().run()}
-          >
-            <ListTodo className="h-4 w-4" />
-          </Toggle>
-          <Toggle
-            size="sm"
-            pressed={editor.isActive('blockquote')}
-            onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
-          >
-            <Quote className="h-4 w-4" />
-          </Toggle>
-          <DropdownMenu open={codeLanguageOpen} onOpenChange={setCodeLanguageOpen}>
-            <DropdownMenuTrigger asChild>
-              <div>
-                <Toggle
-                  size="sm"
-                  pressed={editor.isActive('codeBlock')}
-                  onPressedChange={(pressed) => {
-                    if (!pressed) {
-                      editor.chain().focus().toggleCodeBlock().run()
-                    } else {
-                      setCodeLanguageOpen(true)
-                    }
-                  }}
-                >
-                  <CodeSquare className="h-4 w-4" />
-                </Toggle>
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Select Language</DropdownMenuLabel>
-              {COMMON_LANGUAGES.map((lang) => (
-                <DropdownMenuItem
-                  key={lang.value}
-                  onClick={() => {
-                    if (editor.isActive('codeBlock')) {
-                      // If already in code block, just update the language
-                      editor.chain().focus().updateAttributes('codeBlock', {
-                        language: lang.value
-                      }).run()
-                    } else {
-                      // If not in code block, create one with the language
-                      editor.chain().focus().setCodeBlock({
-                        language: lang.value
-                      }).run()
-                    }
-                    setCodeLanguageOpen(false)
-                  }}
-                >
-                  {lang.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ToolButton
+            icon={List}
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            isActive={editor.isActive('bulletList')}
+            tooltip="Bullet List"
+          />
+          <ToolButton
+            icon={ListOrdered}
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            isActive={editor.isActive('orderedList')}
+            tooltip="Ordered List"
+          />
+          <ToolButton
+            icon={ListTodo}
+            onClick={() => editor.chain().focus().toggleTaskList().run()}
+            isActive={editor.isActive('taskList')}
+            tooltip="Task List"
+          />
+          <ToolButton
+            icon={Quote}
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            isActive={editor.isActive('blockquote')}
+            tooltip="Blockquote"
+          />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <DropdownMenu open={codeLanguageOpen} onOpenChange={setCodeLanguageOpen}>
+                    <DropdownMenuTrigger asChild>
+                      <div>
+                        <Toggle
+                          size="sm"
+                          pressed={editor.isActive('codeBlock')}
+                          onPressedChange={(pressed) => {
+                            if (!pressed) {
+                              editor.chain().focus().toggleCodeBlock().run()
+                            } else {
+                              setCodeLanguageOpen(true)
+                            }
+                          }}
+                        >
+                          <CodeSquare className="h-4 w-4" />
+                        </Toggle>
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuLabel>Select Language</DropdownMenuLabel>
+                      {COMMON_LANGUAGES.map((lang) => (
+                        <DropdownMenuItem
+                          key={lang.value}
+                          onClick={() => {
+                            if (editor.isActive('codeBlock')) {
+                              // If already in code block, just update the language
+                              editor.chain().focus().updateAttributes('codeBlock', {
+                                language: lang.value
+                              }).run()
+                            } else {
+                              // If not in code block, create one with the language
+                              editor.chain().focus().setCodeBlock({
+                                language: lang.value
+                              }).run()
+                            }
+                            setCodeLanguageOpen(false)
+                          }}
+                        >
+                          {lang.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Code Block (click to select language)</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         {/* Mobile/Tablet: Lists & Blocks Dropdown */}
@@ -534,6 +621,20 @@ export function ToolbarResponsive({ editor, onToggleMarkdown }: ToolbarProps) {
               <TooltipContent>Math Formula</TooltipContent>
             </Tooltip>
           </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setImageDialogOpen(true)}
+                >
+                  <ImageIcon className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Insert Image</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         {/* Mobile/Tablet: Insert Dropdown */}
@@ -573,6 +674,10 @@ export function ToolbarResponsive({ editor, onToggleMarkdown }: ToolbarProps) {
                 <Sigma className="h-4 w-4 mr-2" />
                 Math Formula
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setImageDialogOpen(true)}>
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Image
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -595,7 +700,7 @@ export function ToolbarResponsive({ editor, onToggleMarkdown }: ToolbarProps) {
                 <TooltipContent>
                   <div className="flex items-center gap-2">
                     <p>Switch to Markdown Source</p>
-                    <kbd className="px-1.5 py-0.5 text-xs bg-secondary text-secondary-foreground rounded border border-border">
+                    <kbd className="px-1.5 py-0.5 text-xs bg-zinc-700 dark:bg-zinc-300 text-white dark:text-zinc-900 rounded font-mono">
                       Ctrl+/
                     </kbd>
                   </div>
@@ -667,6 +772,49 @@ export function ToolbarResponsive({ editor, onToggleMarkdown }: ToolbarProps) {
               Cancel
             </Button>
             <Button onClick={addMath}>Insert</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Dialog */}
+      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Insert Image</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="image-url">Image URL</Label>
+              <Input
+                id="image-url"
+                placeholder="https://example.com/image.jpg"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="image-alt">Alternative Text (optional)</Label>
+              <Input
+                id="image-alt"
+                placeholder="Description of the image"
+                value={imageAlt}
+                onChange={(e) => setImageAlt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    addImage()
+                  }
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                Alt text helps with accessibility and SEO
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImageDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={addImage}>Insert</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

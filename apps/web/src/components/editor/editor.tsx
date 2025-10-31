@@ -8,6 +8,13 @@ import { cn } from '@/lib/utils'
 import 'katex/dist/katex.min.css'
 import { useImperativeHandle, forwardRef, useEffect, useRef } from 'react'
 
+// Extend the TipTap storage type to include markdown
+interface MarkdownStorage {
+  markdown?: {
+    getMarkdown: () => string
+  }
+}
+
 interface EditorProps {
   content?: string
   onChange?: (content: string) => void
@@ -61,8 +68,11 @@ export const Editor = forwardRef<EditorRef, EditorProps>(function Editor(
       
       // Also emit markdown
       if (onMarkdownChangeRef.current) {
-        const md = editor.storage.markdown.getMarkdown()
-        onMarkdownChangeRef.current(md)
+        const storage = editor.storage as MarkdownStorage
+        if (storage.markdown?.getMarkdown) {
+          const md = storage.markdown.getMarkdown()
+          onMarkdownChangeRef.current(md)
+        }
       }
     },
     editorProps: {
@@ -80,23 +90,22 @@ export const Editor = forwardRef<EditorRef, EditorProps>(function Editor(
   useEffect(() => {
     if (!editor || !markdownValue || markdownValue === '') return
     
-    const currentMarkdown = editor.storage.markdown.getMarkdown()
+    const storage = editor.storage as MarkdownStorage
+    const currentMarkdown = storage.markdown?.getMarkdown ? storage.markdown.getMarkdown() : ''
     if (currentMarkdown === markdownValue) return
     
     isUpdatingFromMarkdown.current = true
     
     queueMicrotask(() => {
-      editor.commands.setContent(markdownValue, false, {
-        preserveWhitespace: 'full'
-      })
+      editor.commands.setContent(markdownValue)
       
       isUpdatingFromMarkdown.current = false
       
       const html = editor.getHTML()
       onChangeRef.current?.(html)
       
-      if (onMarkdownChangeRef.current) {
-        const md = editor.storage.markdown.getMarkdown()
+      if (onMarkdownChangeRef.current && storage.markdown?.getMarkdown) {
+        const md = storage.markdown.getMarkdown()
         onMarkdownChangeRef.current(md)
       }
     })
@@ -105,7 +114,11 @@ export const Editor = forwardRef<EditorRef, EditorProps>(function Editor(
   useImperativeHandle(ref, () => ({
     getMarkdown: () => {
       if (!editor) return ''
-      return editor.storage.markdown.getMarkdown()
+      const storage = editor.storage as MarkdownStorage
+      if (storage.markdown?.getMarkdown) {
+        return storage.markdown.getMarkdown()
+      }
+      return ''
     },
     getEditor: () => editor,
   }))

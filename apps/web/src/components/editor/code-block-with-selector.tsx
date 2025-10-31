@@ -46,14 +46,28 @@ const LANGUAGE_ALIASES: Record<string, string> = {
 export function CodeBlockWithSelector({ node, updateAttributes, editor }: NodeViewProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
   
   const rawLanguage = node.attrs.language
   const normalizedLang = (rawLanguage || 'plaintext').toLowerCase()
   const language = LANGUAGE_ALIASES[normalizedLang] || normalizedLang
   const selectedLang = LANGUAGES.find(l => l.value === language) || LANGUAGES[0]
+
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX
+      })
+    }
+  }, [isOpen])
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+          buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
         setIsOpen(false)
       }
     }
@@ -70,55 +84,65 @@ export function CodeBlockWithSelector({ node, updateAttributes, editor }: NodeVi
   }
 
   return (
-    <NodeViewWrapper className="relative code-block-wrapper">
-      <pre className={cn('code-block', `language-${language}`)} data-language={language}>
-        {editor.isEditable ? (
-          <div className="absolute top-0 left-0 right-0 z-10" ref={dropdownRef}>
+    <>
+      <NodeViewWrapper className="relative code-block-wrapper" style={{ overflow: 'visible' }}>
+        <pre className={cn('code-block', `language-${language}`)} data-language={language} style={{ position: 'relative' }}>
+          {editor.isEditable ? (
+            <div className="absolute top-0 left-0 right-0 z-10">
+              <button
+                ref={buttonRef}
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted rounded-tl-lg rounded-tr-lg border-b border-border transition-colors"
+                contentEditable={false}
+              >
+                <span className="uppercase tracking-wide">{selectedLang.label}</span>
+                <ChevronDown className={cn(
+                  'h-3 w-3 transition-transform',
+                  isOpen && 'rotate-180'
+                )} />
+              </button>
+            </div>
+          ) : (
+            <div className="absolute top-0 left-0 px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground bg-muted/50 rounded-tl-lg border-b border-border">
+              {selectedLang.label}
+            </div>
+          )}
+          <code
+            className={cn(`language-${language}`, 'pt-10')}
+            style={{ display: 'block' }}
+          >
+            <NodeViewContent />
+          </code>
+        </pre>
+      </NodeViewWrapper>
+
+      {/* Dropdown menu rendered outside of the code block */}
+      {isOpen && (
+        <div 
+          ref={dropdownRef}
+          className="fixed w-48 bg-popover border border-border rounded-md shadow-lg max-h-64 overflow-y-auto z-[100]"
+          style={{
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+          }}
+        >
+          {LANGUAGES.map((lang) => (
             <button
+              key={lang.value}
               type="button"
-              onClick={() => setIsOpen(!isOpen)}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted rounded-tl-lg rounded-tr-lg border-b border-border transition-colors"
+              onClick={() => handleLanguageChange(lang.value)}
+              className={cn(
+                'w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors',
+                language === lang.value && 'bg-accent text-accent-foreground'
+              )}
               contentEditable={false}
             >
-              <span className="uppercase tracking-wide">{selectedLang.label}</span>
-              <ChevronDown className={cn(
-                'h-3 w-3 transition-transform',
-                isOpen && 'rotate-180'
-              )} />
+              {lang.label}
             </button>
-
-            {/* Dropdown menu */}
-            {isOpen && (
-              <div className="absolute top-full left-0 mt-0 w-48 bg-popover border border-border rounded-md shadow-lg max-h-64 overflow-y-auto z-20">
-                {LANGUAGES.map((lang) => (
-                  <button
-                    key={lang.value}
-                    type="button"
-                    onClick={() => handleLanguageChange(lang.value)}
-                    className={cn(
-                      'w-full px-3 py-2 text-left text-sm hover:bg-accent transition-colors',
-                      language === lang.value && 'bg-accent text-accent-foreground'
-                    )}
-                    contentEditable={false}
-                  >
-                    {lang.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="absolute top-0 left-0 px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground bg-muted/50 rounded-tl-lg border-b border-border">
-            {selectedLang.label}
-          </div>
-        )}
-        <code
-          className={cn(`language-${language}`, 'pt-10')}
-          style={{ display: 'block' }}
-        >
-          <NodeViewContent as="span" />
-        </code>
-      </pre>
-    </NodeViewWrapper>
+          ))}
+        </div>
+      )}
+    </>
   )
 }
