@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState, useMemo } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown } from '@codemirror/lang-markdown'
 import { oneDark } from '@codemirror/theme-one-dark'
-import { EditorView } from '@codemirror/view'
 import { debounce } from '@/lib/debounce'
 
 interface MarkdownEditorProps {
@@ -64,36 +63,23 @@ export function MarkdownEditor({
     <div className={`flex-1 overflow-auto ${className}`} spellCheck="false">
       <CodeMirror
         value={value}
-        minHeight="400px"
-        maxHeight="none"
-        extensions={[
-          markdown(),
-          EditorView.lineWrapping,
-        ]}
+        height="400px"
+        extensions={[markdown()]}
         theme={theme === 'dark' ? oneDark : undefined}
         onChange={handleChange}
-        spellCheck={false}
         basicSetup={{
           lineNumbers: true,
-          highlightActiveLineGutter: true,
-          highlightSpecialChars: true,
-          foldGutter: true,
-          drawSelection: true,
-          dropCursor: true,
-          allowMultipleSelections: true,
-          indentOnInput: true,
-          bracketMatching: true,
-          closeBrackets: true,
-          autocompletion: true,
-          rectangularSelection: true,
-          crosshairCursor: true,
-          highlightActiveLine: true,
-          highlightSelectionMatches: true,
-          closeBracketsKeymap: true,
-          searchKeymap: true,
-          foldKeymap: true,
-          completionKeymap: true,
-          lintKeymap: true,
+          foldGutter: false,
+          dropCursor: false,
+          allowMultipleSelections: false,
+          indentOnInput: false,
+          bracketMatching: false,
+          closeBrackets: false,
+          autocompletion: false,
+          rectangularSelection: false,
+          crosshairCursor: false,
+          highlightSelectionMatches: false,
+          searchKeymap: false,
         }}
         style={{
           fontSize: '15px',

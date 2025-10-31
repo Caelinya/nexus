@@ -21,6 +21,7 @@ import {
   ListTodo,
   Table as TableIcon,
   Minus,
+  Image as ImageIcon,
   type LucideIcon,
 } from 'lucide-react'
 import { Toggle } from '@/components/ui/toggle'
@@ -98,6 +99,9 @@ export function Toolbar({ editor, onToggleMarkdown }: ToolbarProps) {
   const [linkUrl, setLinkUrl] = useState('')
   const [mathDialogOpen, setMathDialogOpen] = useState(false)
   const [mathFormula, setMathFormula] = useState('')
+  const [imageDialogOpen, setImageDialogOpen] = useState(false)
+  const [imageUrl, setImageUrl] = useState('')
+  const [imageAlt, setImageAlt] = useState('')
 
   // Calculate text statistics
   const textStats = useMemo(() => {
@@ -127,6 +131,15 @@ export function Toolbar({ editor, onToggleMarkdown }: ToolbarProps) {
     }
     setMathFormula('')
     setMathDialogOpen(false)
+  }
+
+  const addImage = () => {
+    if (imageUrl) {
+      editor.chain().focus().setImage({ src: imageUrl, alt: imageAlt }).run()
+    }
+    setImageUrl('')
+    setImageAlt('')
+    setImageDialogOpen(false)
   }
 
   return (
@@ -323,6 +336,23 @@ export function Toolbar({ editor, onToggleMarkdown }: ToolbarProps) {
           </Tooltip>
         </TooltipProvider>
 
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setImageDialogOpen(true)}
+              >
+                <ImageIcon className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Insert Image</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
         <div className="ml-auto flex items-center gap-2">
           {onToggleMarkdown && (
             <>
@@ -417,6 +447,48 @@ export function Toolbar({ editor, onToggleMarkdown }: ToolbarProps) {
               Cancel
             </Button>
             <Button onClick={addMath}>Insert</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Insert Image</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="image-url">Image URL</Label>
+              <Input
+                id="image-url"
+                placeholder="https://example.com/image.jpg"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="image-alt">Alternative Text (optional)</Label>
+              <Input
+                id="image-alt"
+                placeholder="Description of the image"
+                value={imageAlt}
+                onChange={(e) => setImageAlt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    addImage()
+                  }
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                Alt text helps with accessibility and SEO
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImageDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={addImage}>Insert</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

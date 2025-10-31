@@ -1,6 +1,7 @@
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import Link from '@tiptap/extension-link'
+import Image from '@tiptap/extension-image'
 import Placeholder from '@tiptap/extension-placeholder'
 import CharacterCount from '@tiptap/extension-character-count'
 import Mathematics from '@tiptap/extension-mathematics'
@@ -187,6 +188,13 @@ export const extensions = [
   TableRow,
   TableHeader,
   TableCell,
+  Image.configure({
+    HTMLAttributes: {
+      class: 'max-w-full h-auto rounded-lg shadow-md',
+    },
+    allowBase64: true,
+    inline: false,
+  }),
   // Markdown must come last to properly serialize all other extensions
   Markdown.configure({
     html: true,
