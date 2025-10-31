@@ -146,15 +146,18 @@
 }
 
 /* Dark mode scrollbar */
+:root.dark ::-webkit-scrollbar-track,
 .dark ::-webkit-scrollbar-track {
   background: oklch(0.205 0 0);
 }
 
+:root.dark ::-webkit-scrollbar-thumb,
 .dark ::-webkit-scrollbar-thumb {
   background: oklch(0.4 0 0);
   border-color: oklch(0.205 0 0);
 }
 
+:root.dark ::-webkit-scrollbar-thumb:hover,
 .dark ::-webkit-scrollbar-thumb:hover {
   background: oklch(0.5 0 0);
 }
@@ -165,6 +168,9 @@
   scrollbar-color: oklch(0.8 0 0) oklch(0.97 0 0);
 }
 
+:root.dark,
+:root.dark *,
+.dark,
 .dark * {
   scrollbar-color: oklch(0.4 0 0) oklch(0.205 0 0);
 }

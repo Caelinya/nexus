@@ -1,11 +1,12 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useCallback } from 'react'
 import { EditorRef } from '@/components/editor'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useEditorState } from '@/hooks/useEditorState'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { ArticleEditorHeader } from './components/ArticleEditorHeader'
 import { EditorContainer } from './components/EditorContainer'
 import { AdvancedOptions } from './components/AdvancedOptions'
@@ -26,42 +27,38 @@ export default function EditArticlePage() {
     setShowMarkdown,
   } = useEditorState()
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     console.log('Saving article:', { title, content, markdown })
     // TODO: Call API to save article
-  }
+  }, [title, content, markdown])
+
+  const toggleMarkdownView = useCallback(() => {
+    if (layoutMode === 'tabs') {
+      setShowMarkdown(!showMarkdown)
+    }
+  }, [layoutMode, showMarkdown, setShowMarkdown])
 
   // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
-      const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey
-
-      // Ctrl/Cmd + S: Save
-      if (ctrlOrCmd && e.key === 's') {
-        e.preventDefault()
-        handleSave()
-        return
-      }
-
-      // Ctrl/Cmd + /: Toggle markdown view (only in tab mode)
-      if (ctrlOrCmd && e.key === '/' && layoutMode === 'tabs') {
-        e.preventDefault()
-        setShowMarkdown(!showMarkdown)
-        return
-      }
-
-      // Ctrl/Cmd + \: Toggle layout mode
-      if (ctrlOrCmd && e.key === '\\') {
-        e.preventDefault()
-        toggleLayoutMode()
-        return
-      }
+  useKeyboardShortcuts([
+    {
+      key: 's',
+      ctrlOrCmd: true,
+      callback: handleSave,
+      description: 'Save article'
+    },
+    {
+      key: '/',
+      ctrlOrCmd: true,
+      callback: toggleMarkdownView,
+      description: 'Toggle markdown view'
+    },
+    {
+      key: '\\',
+      ctrlOrCmd: true,
+      callback: toggleLayoutMode,
+      description: 'Toggle layout mode'
     }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleSave, layoutMode, showMarkdown, setShowMarkdown, toggleLayoutMode])
+  ])
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
