@@ -47,20 +47,68 @@ export function CodeBlockWithSelector({ node, updateAttributes, editor }: NodeVi
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null)
   
   const rawLanguage = node.attrs.language
   const normalizedLang = (rawLanguage || 'plaintext').toLowerCase()
   const language = LANGUAGE_ALIASES[normalizedLang] || normalizedLang
   const selectedLang = LANGUAGES.find(l => l.value === language) || LANGUAGES[0]
 
+  const calculateDropdownPosition = () => {
+    if (!buttonRef.current) return
+    
+    const buttonRect = buttonRef.current.getBoundingClientRect()
+    const dropdownHeight = 256 // max-h-64 = 16rem = 256px
+    const viewportHeight = window.innerHeight
+    const viewportWidth = window.innerWidth
+    const dropdownWidth = 192 // w-48 = 12rem = 192px
+    
+    let top = buttonRect.bottom + 2 // 2px gap
+    let left = buttonRect.left
+    
+    // Check if dropdown would go below viewport
+    if (top + dropdownHeight > viewportHeight && buttonRect.top > dropdownHeight) {
+      // Position above the button
+      top = buttonRect.top - dropdownHeight - 2 // 2px gap
+    }
+    
+    // Check if dropdown would go outside right edge
+    if (left + dropdownWidth > viewportWidth) {
+      left = viewportWidth - dropdownWidth - 8 // 8px margin
+    }
+    
+    // Ensure minimum left position
+    if (left < 8) {
+      left = 8
+    }
+    
+    setDropdownPosition({ top, left })
+  }
+
   useEffect(() => {
-    if (isOpen && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect()
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX
+    if (isOpen) {
+      // Use requestAnimationFrame to ensure button is rendered before calculating position
+      requestAnimationFrame(() => {
+        calculateDropdownPosition()
       })
+      
+      // Update position on scroll or resize
+      const handlePositionUpdate = () => {
+        if (isOpen) {
+          calculateDropdownPosition()
+        }
+      }
+      
+      window.addEventListener('scroll', handlePositionUpdate, true) // capture phase to catch all scroll events
+      window.addEventListener('resize', handlePositionUpdate)
+      
+      return () => {
+        window.removeEventListener('scroll', handlePositionUpdate, true)
+        window.removeEventListener('resize', handlePositionUpdate)
+      }
+    } else {
+      // Reset position when closing
+      setDropdownPosition(null)
     }
   }, [isOpen])
 
@@ -68,7 +116,7 @@ export function CodeBlockWithSelector({ node, updateAttributes, editor }: NodeVi
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
           buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+        handleClose()
       }
     }
 
@@ -81,6 +129,12 @@ export function CodeBlockWithSelector({ node, updateAttributes, editor }: NodeVi
   const handleLanguageChange = (value: string) => {
     updateAttributes({ language: value })
     setIsOpen(false)
+    setDropdownPosition(null)
+  }
+  
+  const handleClose = () => {
+    setIsOpen(false)
+    setDropdownPosition(null)
   }
 
   return (
@@ -118,8 +172,8 @@ export function CodeBlockWithSelector({ node, updateAttributes, editor }: NodeVi
       </NodeViewWrapper>
 
       {/* Dropdown menu rendered outside of the code block */}
-      {isOpen && (
-        <div 
+      {isOpen && dropdownPosition && (
+        <div
           ref={dropdownRef}
           className="fixed w-48 bg-popover border border-border rounded-md shadow-lg max-h-64 overflow-y-auto z-[100]"
           style={{

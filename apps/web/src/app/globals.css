@@ -123,6 +123,52 @@
   }
 }
 
+/* Custom scrollbar styles */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: oklch(0.97 0 0);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.8 0 0);
+  border-radius: 6px;
+  border: 2px solid oklch(0.97 0 0);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.65 0 0);
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: oklch(0.205 0 0);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: oklch(0.4 0 0);
+  border-color: oklch(0.205 0 0);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.5 0 0);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.8 0 0) oklch(0.97 0 0);
+}
+
+.dark * {
+  scrollbar-color: oklch(0.4 0 0) oklch(0.205 0 0);
+}
+
 .ProseMirror {
   outline: none !important;
 }
@@ -135,7 +181,7 @@
   height: 0;
 }
 
-/* 标题样式 */
+/* Heading styles */
 .ProseMirror h1 {
   font-size: 2.5rem;
   font-weight: 700;
@@ -184,7 +230,7 @@
   margin-bottom: 0.5rem;
 }
 
-/* 段落样式 */
+/* Paragraph styles */
 .ProseMirror p {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
@@ -192,7 +238,7 @@
   font-size: 1rem;
 }
 
-/* 列表样式 */
+/* List styles */
 .ProseMirror ul {
   list-style-type: disc;
   padding-left: 1.5rem;
@@ -219,7 +265,7 @@
   list-style-type: lower-alpha;
 }
 
-/* 引用样式 */
+/* Blockquote styles */
 .ProseMirror blockquote {
   border-left: 4px solid oklch(0.556 0 0);
   padding-left: 1rem;
@@ -233,7 +279,7 @@
   color: oklch(0.708 0 0);
 }
 
-/* 代码样式 */
+/* Inline code styles */
 .ProseMirror code {
   background-color: oklch(0.97 0 0);
   color: oklch(0.145 0 0);
@@ -248,7 +294,7 @@
   color: oklch(0.985 0 0);
 }
 
-/* 代码块样式 - 使用 NodeView，不再需要 ::before 伪元素 */
+/* Code block styles - Using NodeView, no longer need ::before pseudo element */
 .ProseMirror .code-block-wrapper {
   margin: 1rem 0;
 }
@@ -278,14 +324,14 @@
   font-feature-settings: 'liga' 1, 'calt' 1;
 }
 
-/* highlight.js 样式支持 */
+/* highlight.js style support */
 .ProseMirror .code-block-wrapper .hljs {
   display: block;
   padding: 0;
   background: transparent;
 }
 
-/* 水平线 */
+/* Horizontal rule */
 .ProseMirror hr {
   border: none;
   border-top: 2px solid oklch(0.922 0 0);
@@ -296,7 +342,7 @@
   border-top-color: oklch(0.269 0 0);
 }
 
-/* LaTeX 数学公式样式 */
+/* LaTeX math formula styles */
 .ProseMirror .math-node {
   display: inline-block;
   padding: 0.125rem 0.25rem;
@@ -310,7 +356,7 @@
   background-color: oklch(0.269 0 0);
 }
 
-/* 任务列表样式 */
+/* Task list styles */
 .ProseMirror ul[data-type="taskList"] {
   list-style: none;
   padding-left: 0;
@@ -332,7 +378,7 @@
   flex: 1 1 auto;
 }
 
-/* 表格样式 */
+/* Table styles */
 .ProseMirror table {
   border-collapse: collapse;
   table-layout: fixed;
@@ -375,7 +421,7 @@
   pointer-events: none;
 }
 
-/* 链接样式 */
+/* Link styles */
 .ProseMirror a {
   color: oklch(0.5 0.2 250);
   text-decoration: underline;
