@@ -17,6 +17,7 @@ import { ReactNodeViewRenderer } from '@tiptap/react'
 import { common, createLowlight } from 'lowlight'
 import { editorConfig } from '@/config/editor.config'
 import { CodeBlockWithSelector } from './code-block-with-selector'
+import type { Node as ProsemirrorNode } from '@tiptap/pm/model'
 
 const lowlight = createLowlight(common)
 
@@ -54,7 +55,7 @@ export const extensions = [
       return {
         language: {
           default: editorConfig.extensions.codeBlock.defaultLanguage,
-          parseHTML: (element) => {
+          parseHTML: (element: HTMLElement) => {
             // element is the <pre> tag, but language info is on the <code> child
             const code = element.querySelector('code')
             if (code) {
@@ -91,7 +92,7 @@ export const extensions = [
         {
           tag: 'pre',
           preserveWhitespace: 'full',
-          getAttrs: (node) => {
+          getAttrs: (node: Node | string) => {
             if (typeof node === 'string') return null
             
             const element = node as HTMLElement
@@ -110,7 +111,7 @@ export const extensions = [
     },
     
     // Override renderHTML to add data-language attribute
-    renderHTML({ node, HTMLAttributes }) {
+    renderHTML({ node, HTMLAttributes }: { node: ProsemirrorNode; HTMLAttributes: Record<string, any> }) {
       const language = (node.attrs.language || editorConfig.extensions.codeBlock.defaultLanguage).toLowerCase()
       
       return [
@@ -135,7 +136,7 @@ export const extensions = [
     addStorage() {
       return {
         markdown: {
-          serialize(state, node) {
+          serialize(state: any, node: ProsemirrorNode) {
             const language = node.attrs.language || 'plaintext'
             state.write('```' + language + '\n')
             state.text(node.textContent, false)
@@ -145,7 +146,7 @@ export const extensions = [
           },
           parse: {
             // This is called when markdown-it parses a fence token
-            updateDOM(dom) {
+            updateDOM(dom: HTMLElement) {
               // When markdown-it creates a <pre> element for a fence, update its attributes
               const code = dom.querySelector('code')
               if (!code) return

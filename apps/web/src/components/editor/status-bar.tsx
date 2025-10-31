@@ -12,11 +12,11 @@ export function StatusBar({ editor }: StatusBarProps) {
   // Calculate text statistics
   const textStats = useMemo(() => {
     const text = editor.getText()
-    const characterCount = editor.storage.characterCount.characters()
+    const characterCount = editor.storage.characterCount?.characters() || 0
     const wordCount = getWordCount(text)
     const readingTime = getReadingTime(wordCount)
     return { characterCount, wordCount, readingTime }
-  }, [editor.getText(), editor.storage.characterCount.characters()])
+  }, [editor])
 
   return (
     <div className="sticky bottom-0 z-10 flex items-center justify-between gap-2 border-t px-3 py-1.5 bg-muted/30 backdrop-blur-sm text-xs text-muted-foreground">

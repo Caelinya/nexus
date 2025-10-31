@@ -102,11 +102,11 @@ export function Toolbar({ editor, onToggleMarkdown }: ToolbarProps) {
   // Calculate text statistics
   const textStats = useMemo(() => {
     const text = editor.getText()
-    const characterCount = editor.storage.characterCount.characters()
+    const characterCount = editor.storage.characterCount?.characters() || 0
     const wordCount = getWordCount(text)
     const readingTime = getReadingTime(wordCount)
     return { characterCount, wordCount, readingTime }
-  }, [editor.getText(), editor.storage.characterCount.characters()])
+  }, [editor])
 
   const addLink = () => {
     if (linkUrl) {
