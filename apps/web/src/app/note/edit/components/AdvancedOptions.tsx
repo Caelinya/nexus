@@ -99,7 +99,10 @@ function getFileIcon(type: string) {
 
 export function AdvancedOptions({ onOptionsChange }: AdvancedOptionsProps) {
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
   const [destructConfig, setDestructConfig] = useState<DestructConfig>({ mode: 'none' })
   const [attachments, setAttachments] = useState<FileAttachment[]>([])
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false)
@@ -108,14 +111,33 @@ export function AdvancedOptions({ onOptionsChange }: AdvancedOptionsProps) {
   const [isDragging, setIsDragging] = useState(false)
 
   const handlePasswordSave = () => {
+    if (password && password !== confirmPassword) {
+      setPasswordError('Passwords do not match')
+      return
+    }
+    setPasswordError('')
+    setConfirmPassword('')
     setIsPasswordDialogOpen(false)
     updateOptions()
   }
 
   const handlePasswordRemove = () => {
     setPassword('')
+    setConfirmPassword('')
+    setPasswordError('')
     setIsPasswordDialogOpen(false)
     updateOptions()
+  }
+
+  const handlePasswordDialogClose = (open: boolean) => {
+    if (!open) {
+      // Reset temporary fields when closing
+      setConfirmPassword('')
+      setPasswordError('')
+      setShowPassword(false)
+      setShowConfirmPassword(false)
+    }
+    setIsPasswordDialogOpen(open)
   }
 
   const handleDestructSave = () => {
@@ -192,13 +214,22 @@ export function AdvancedOptions({ onOptionsChange }: AdvancedOptionsProps) {
       case 'after-read':
         return 'Destroy immediately after reading'
       case 'after-read-delay':
-        const delay = destructConfig.afterReadDelay || 0
-        if (delay === 0) return 'Destroy immediately after reading'
+        const delay = destructConfig.afterReadDelay ?? 30 // Default to 30 minutes
         const delayOption = AFTER_READ_DELAY_OPTIONS.find(o => o.value === delay)
         return `Destroy ${delayOption?.label.toLowerCase()} after first read`
       case 'scheduled':
         if (destructConfig.scheduledTime) {
-          return `Scheduled: ${new Date(destructConfig.scheduledTime).toLocaleString()}`
+          // Format the date consistently without timezone conversion
+          const date = new Date(destructConfig.scheduledTime)
+          const options: Intl.DateTimeFormatOptions = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          }
+          return `Scheduled: ${date.toLocaleString('en-US', options)}`
         }
         return 'Scheduled destruction'
       case 'custom':
@@ -224,7 +255,7 @@ export function AdvancedOptions({ onOptionsChange }: AdvancedOptionsProps) {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Access Control */}
-        <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <Dialog open={isPasswordDialogOpen} onOpenChange={handlePasswordDialogClose}>
           <DialogTrigger asChild>
             <div className={cn(
               "relative group cursor-pointer",
@@ -283,8 +314,14 @@ export function AdvancedOptions({ onOptionsChange }: AdvancedOptionsProps) {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter a secure password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pr-10"
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      if (passwordError) setPasswordError('')
+                    }}
+                    className={cn(
+                      "pr-10",
+                      passwordError && "border-destructive"
+                    )}
                   />
                   <button
                     type="button"
@@ -294,10 +331,46 @@ export function AdvancedOptions({ onOptionsChange }: AdvancedOptionsProps) {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Use a strong password to protect sensitive content
-                </p>
               </div>
+
+              {password && (
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="Re-enter password"
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value)
+                        if (passwordError) setPasswordError('')
+                      }}
+                      className={cn(
+                        "pr-10",
+                        passwordError && "border-destructive"
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {passwordError && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      {passwordError}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <p className="text-xs text-muted-foreground">
+                Use a strong password to protect sensitive content
+              </p>
               
               <div className="flex justify-between gap-2 pt-2">
                 {password && (
@@ -313,7 +386,10 @@ export function AdvancedOptions({ onOptionsChange }: AdvancedOptionsProps) {
                   <Button variant="outline" onClick={() => setIsPasswordDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={handlePasswordSave}>
+                  <Button
+                    onClick={handlePasswordSave}
+                    disabled={!!password && !confirmPassword}
+                  >
                     Save Changes
                   </Button>
                 </div>
@@ -374,9 +450,16 @@ export function AdvancedOptions({ onOptionsChange }: AdvancedOptionsProps) {
             </DialogHeader>
             
             <div className="space-y-6 pt-4">
-              <Tabs 
-                value={destructConfig.mode} 
-                onValueChange={(value: any) => setDestructConfig({...destructConfig, mode: value})}
+              <Tabs
+                value={destructConfig.mode}
+                onValueChange={(value: any) => {
+                  const newConfig = {...destructConfig, mode: value}
+                  // Set default delay when switching to after-read-delay mode
+                  if (value === 'after-read-delay' && !destructConfig.afterReadDelay) {
+                    newConfig.afterReadDelay = 30 // Default to 30 minutes
+                  }
+                  setDestructConfig(newConfig)
+                }}
                 className="w-full"
               >
                 <TabsList className="grid w-full grid-cols-5">
@@ -466,8 +549,20 @@ export function AdvancedOptions({ onOptionsChange }: AdvancedOptionsProps) {
                       <Label>Destruction date and time</Label>
                       <Input
                         type="datetime-local"
-                        value={destructConfig.scheduledTime ? new Date(destructConfig.scheduledTime).toISOString().slice(0, 16) : ''}
-                        onChange={(e) => setDestructConfig({...destructConfig, scheduledTime: new Date(e.target.value)})}
+                        value={destructConfig.scheduledTime ?
+                          // Convert to local datetime string for the input
+                          new Date(destructConfig.scheduledTime.getTime() - destructConfig.scheduledTime.getTimezoneOffset() * 60000)
+                            .toISOString().slice(0, 16) : ''
+                        }
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            // The input value is in local time, create Date object directly
+                            const localDate = new Date(e.target.value)
+                            setDestructConfig({...destructConfig, scheduledTime: localDate})
+                          } else {
+                            setDestructConfig({...destructConfig, scheduledTime: undefined})
+                          }
+                        }}
                         min={new Date().toISOString().slice(0, 16)}
                       />
                       <p className="text-xs text-muted-foreground">
