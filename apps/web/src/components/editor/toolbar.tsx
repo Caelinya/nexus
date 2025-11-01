@@ -83,7 +83,7 @@ function ToolButton({
           <div className="flex items-center gap-2">
             <p>{tooltip}</p>
             {shortcut && (
-              <kbd className="px-1.5 py-0.5 text-xs bg-secondary text-secondary-foreground rounded border border-border">
+              <kbd className="px-1.5 py-0.5 text-xs bg-zinc-300 dark:bg-zinc-700 text-zinc-900 dark:text-white rounded font-mono">
                 {shortcut}
               </kbd>
             )}

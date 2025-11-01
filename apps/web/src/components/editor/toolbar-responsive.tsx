@@ -92,7 +92,7 @@ function ToolButton({
           <div className="flex items-center gap-2">
             <p>{tooltip}</p>
             {shortcut && (
-              <kbd className="px-1.5 py-0.5 text-xs bg-zinc-700 dark:bg-zinc-300 text-white dark:text-zinc-900 rounded font-mono">
+              <kbd className="px-1.5 py-0.5 text-xs bg-zinc-300 dark:bg-zinc-700 text-zinc-900 dark:text-white rounded font-mono">
                 {shortcut}
               </kbd>
             )}
@@ -188,7 +188,7 @@ export function ToolbarResponsive({ editor, onToggleMarkdown }: ToolbarProps) {
               <TooltipContent>
                 <div className="flex items-center gap-2">
                   <p>Undo</p>
-                  <kbd className="px-1.5 py-0.5 text-xs bg-zinc-700 dark:bg-zinc-300 text-white dark:text-zinc-900 rounded font-mono">
+                  <kbd className="px-1.5 py-0.5 text-xs bg-zinc-300 dark:bg-zinc-700 text-zinc-900 dark:text-white rounded font-mono">
                     Ctrl+Z
                   </kbd>
                 </div>
@@ -210,7 +210,7 @@ export function ToolbarResponsive({ editor, onToggleMarkdown }: ToolbarProps) {
               <TooltipContent>
                 <div className="flex items-center gap-2">
                   <p>Redo</p>
-                  <kbd className="px-1.5 py-0.5 text-xs bg-zinc-700 dark:bg-zinc-300 text-white dark:text-zinc-900 rounded font-mono">
+                  <kbd className="px-1.5 py-0.5 text-xs bg-zinc-300 dark:bg-zinc-700 text-zinc-900 dark:text-white rounded font-mono">
                     Ctrl+Y
                   </kbd>
                 </div>
@@ -700,7 +700,7 @@ export function ToolbarResponsive({ editor, onToggleMarkdown }: ToolbarProps) {
                 <TooltipContent>
                   <div className="flex items-center gap-2">
                     <p>Switch to Markdown Source</p>
-                    <kbd className="px-1.5 py-0.5 text-xs bg-zinc-700 dark:bg-zinc-300 text-white dark:text-zinc-900 rounded font-mono">
+                    <kbd className="px-1.5 py-0.5 text-xs bg-zinc-300 dark:bg-zinc-700 text-zinc-900 dark:text-white rounded font-mono">
                       Ctrl+/
                     </kbd>
                   </div>
