@@ -1,9 +1,14 @@
 'use client'
 
 import { NodeViewContent, NodeViewWrapper, NodeViewProps } from '@tiptap/react'
-import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { useState, useRef, useEffect, lazy, Suspense } from 'react'
+import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+// Lazy load MermaidRenderer to avoid SSR issues
+const MermaidRenderer = lazy(() =>
+  import('./mermaid-renderer-interactive').then(mod => ({ default: mod.MermaidRendererInteractive }))
+)
 
 const LANGUAGES = [
   { label: 'Plain Text', value: 'plaintext' },
@@ -28,6 +33,7 @@ const LANGUAGES = [
   { label: 'XML', value: 'xml' },
   { label: 'YAML', value: 'yaml' },
   { label: 'Markdown', value: 'markdown' },
+  { label: 'Mermaid', value: 'mermaid' },
 ]
 
 const LANGUAGE_ALIASES: Record<string, string> = {
@@ -206,6 +212,23 @@ export function CodeBlockWithSelector({ node, updateAttributes, editor }: NodeVi
             )}
           </div>
         </pre>
+        
+        {/* Render Mermaid diagram if language is mermaid */}
+        {language === 'mermaid' && codeContent && (
+          <div className="mt-4">
+            <div className="mb-2 text-xs text-muted-foreground font-medium uppercase tracking-wide">
+              Interactive Mermaid Preview
+            </div>
+            <Suspense fallback={
+              <div className="flex items-center justify-center p-8 text-muted-foreground">
+                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                <span>Loading interactive diagram...</span>
+              </div>
+            }>
+              <MermaidRenderer code={codeContent} />
+            </Suspense>
+          </div>
+        )}
       </NodeViewWrapper>
 
       {/* Dropdown menu rendered outside of the code block */}
