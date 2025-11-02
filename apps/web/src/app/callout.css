@@ -1,0 +1,327 @@
+/* Callout Styles */
+
+/* Base callout styles */
+.callout-wrapper {
+  margin: 1rem 0;
+}
+
+.callout {
+  position: relative;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border-left-width: 4px;
+  border-left-style: solid;
+}
+
+/* Callout header styles */
+.callout h6 {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+/* Callout content styles */
+.callout-content {
+  margin-top: 0.5rem;
+}
+
+.callout-content > :first-child {
+  margin-top: 0;
+}
+
+.callout-content > :last-child {
+  margin-bottom: 0;
+}
+
+/* Prose overrides for callout content */
+.callout-content.prose {
+  font-size: 0.875rem;
+}
+
+.callout-content.prose p {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.callout-content.prose ul,
+.callout-content.prose ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.callout-content.prose li {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.callout-content.prose pre {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.callout-content.prose blockquote {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Collapse/expand button */
+.callout button[aria-label="Expand"],
+.callout button[aria-label="Collapse"] {
+  margin-left: 0.5rem;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background-color 150ms;
+}
+
+/* Type-specific colors - Light mode */
+/* Info types */
+.callout[data-type="note"],
+.callout[data-type="info"] {
+  background-color: rgb(239 246 255);
+  border-color: rgb(59 130 246);
+}
+
+.callout[data-type="abstract"],
+.callout[data-type="summary"],
+.callout[data-type="tldr"] {
+  background-color: rgb(236 254 255);
+  border-color: rgb(6 182 212);
+}
+
+/* Hint types */
+.callout[data-type="tip"],
+.callout[data-type="hint"],
+.callout[data-type="important"] {
+  background-color: rgb(240 253 244);
+  border-color: rgb(16 185 129);
+}
+
+/* Warning types */
+.callout[data-type="warning"],
+.callout[data-type="caution"],
+.callout[data-type="attention"] {
+  background-color: rgb(254 251 235);
+  border-color: rgb(245 158 11);
+}
+
+/* Danger types */
+.callout[data-type="danger"],
+.callout[data-type="error"],
+.callout[data-type="bug"] {
+  background-color: rgb(254 242 242);
+  border-color: rgb(239 68 68);
+}
+
+/* Other types */
+.callout[data-type="example"] {
+  background-color: rgb(250 245 255);
+  border-color: rgb(147 51 234);
+}
+
+.callout[data-type="quote"],
+.callout[data-type="cite"] {
+  background-color: rgb(249 250 251);
+  border-color: rgb(107 114 128);
+}
+
+.callout[data-type="question"],
+.callout[data-type="help"],
+.callout[data-type="faq"] {
+  background-color: rgb(238 242 255);
+  border-color: rgb(99 102 241);
+}
+
+.callout[data-type="todo"] {
+  background-color: rgb(253 242 248);
+  border-color: rgb(236 72 153);
+}
+
+.callout[data-type="success"],
+.callout[data-type="check"],
+.callout[data-type="done"] {
+  background-color: rgb(240 253 244);
+  border-color: rgb(34 197 94);
+}
+
+.callout[data-type="failure"],
+.callout[data-type="fail"],
+.callout[data-type="missing"] {
+  background-color: rgb(255 247 237);
+  border-color: rgb(251 146 60);
+}
+
+/* Dark mode colors */
+.dark .callout[data-type="note"],
+.dark .callout[data-type="info"] {
+  background-color: rgb(23 37 84);
+  border-color: rgb(96 165 250);
+}
+
+.dark .callout[data-type="abstract"],
+.dark .callout[data-type="summary"],
+.dark .callout[data-type="tldr"] {
+  background-color: rgb(8 51 68);
+  border-color: rgb(34 211 238);
+}
+
+.dark .callout[data-type="tip"],
+.dark .callout[data-type="hint"],
+.dark .callout[data-type="important"] {
+  background-color: rgb(6 78 59);
+  border-color: rgb(52 211 153);
+}
+
+.dark .callout[data-type="warning"],
+.dark .callout[data-type="caution"],
+.dark .callout[data-type="attention"] {
+  background-color: rgb(78 36 18);
+  border-color: rgb(251 191 36);
+}
+
+.dark .callout[data-type="danger"],
+.dark .callout[data-type="error"],
+.dark .callout[data-type="bug"] {
+  background-color: rgb(127 29 29);
+  border-color: rgb(248 113 113);
+}
+
+.dark .callout[data-type="example"] {
+  background-color: rgb(88 28 135);
+  border-color: rgb(192 132 252);
+}
+
+.dark .callout[data-type="quote"],
+.dark .callout[data-type="cite"] {
+  background-color: rgb(31 41 55);
+  border-color: rgb(156 163 175);
+}
+
+.dark .callout[data-type="question"],
+.dark .callout[data-type="help"],
+.dark .callout[data-type="faq"] {
+  background-color: rgb(49 46 129);
+  border-color: rgb(129 140 248);
+}
+
+.dark .callout[data-type="todo"] {
+  background-color: rgb(131 24 67);
+  border-color: rgb(244 114 182);
+}
+
+.dark .callout[data-type="success"],
+.dark .callout[data-type="check"],
+.dark .callout[data-type="done"] {
+  background-color: rgb(20 83 45);
+  border-color: rgb(74 222 128);
+}
+
+.dark .callout[data-type="failure"],
+.dark .callout[data-type="fail"],
+.dark .callout[data-type="missing"] {
+  background-color: rgb(124 45 18);
+  border-color: rgb(253 186 116);
+}
+
+/* Icon colors */
+.callout .lucide {
+  flex-shrink: 0;
+}
+
+/* Collapsed state */
+.callout[data-collapsed="true"] .callout-content {
+  display: none;
+}
+
+/* Editor specific styles */
+.ProseMirror .callout-wrapper {
+  margin: 0;
+}
+
+/* Ensure proper spacing in editor */
+.ProseMirror .callout + * {
+  margin-top: 1rem;
+}
+
+.ProseMirror * + .callout {
+  margin-top: 1rem;
+}
+
+/* CodeMirror callout syntax highlighting */
+.cm-callout-marker {
+  color: #0969da;
+  font-weight: bold;
+}
+
+.cm-callout-type {
+  color: #cf222e;
+  font-weight: bold;
+}
+
+.cm-callout-title {
+  color: #1f2328;
+  font-weight: bold;
+}
+
+.dark .cm-callout-title {
+  color: #e6edf3;
+}
+
+.cm-callout-content {
+  color: #1f2328;
+}
+
+.dark .cm-callout-content {
+  color: #e6edf3;
+}
+
+/* Animation for collapse/expand */
+.callout-content {
+  transition: all 200ms ease-in-out;
+}
+
+.callout[data-collapsed="false"] .callout-content {
+  animation: expand 200ms ease-in-out;
+}
+
+@keyframes expand {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .callout {
+    padding: 0.75rem;
+  }
+  
+  .callout h6 {
+    font-size: 0.8125rem;
+  }
+  
+  .callout-content.prose {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .callout {
+    page-break-inside: avoid;
+    border-left-width: 2px;
+  }
+  
+  .callout[data-collapsed="true"] .callout-content {
+    display: block !important;
+  }
+  
+  .callout button[aria-label="Expand"],
+  .callout button[aria-label="Collapse"] {
+    display: none;
+  }
+}
