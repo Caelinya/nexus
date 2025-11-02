@@ -10,7 +10,6 @@ import { materialDark, materialLight } from '@uiw/codemirror-theme-material'
 import { solarizedLight, solarizedDark } from '@uiw/codemirror-theme-solarized'
 import { monokai } from '@uiw/codemirror-theme-monokai'
 import { debounce } from '@/lib/debounce'
-import { markdownCallout } from './markdown-callout'
 
 interface MarkdownEditorProps {
   value: string
@@ -113,10 +112,7 @@ export function MarkdownEditor({
         value={value}
         minHeight="400px"
         maxHeight="none"
-        extensions={[
-          markdown(),
-          markdownCallout()
-        ]}
+        extensions={[markdown()]}
         theme={getTheme()}
         onChange={handleChange}
         basicSetup={{

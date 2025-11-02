@@ -18,7 +18,6 @@ import { ReactNodeViewRenderer } from '@tiptap/react'
 import { common, createLowlight } from 'lowlight'
 import { editorConfig } from '@/config/editor.config'
 import { CodeBlockWithSelector } from './code-block-with-selector'
-import { Callout } from './extensions/callout'
 import type { Node as ProsemirrorNode } from '@tiptap/pm/model'
 
 const lowlight = createLowlight(common)
@@ -195,12 +194,6 @@ export const extensions = [
     },
     allowBase64: true,
     inline: false,
-  }),
-  // Callout extension must be before Markdown to ensure proper parsing
-  Callout.configure({
-    HTMLAttributes: {
-      class: 'callout-block',
-    },
   }),
   // Markdown must come last to properly serialize all other extensions
   Markdown.configure({
